@@ -1,28 +1,29 @@
-# A generalization of Convolutional Neural Networks to Graph-Structured Data
+# A generalization of Convolutional Neural Networks to Graph-Structured Data(Modified Version)
 
-This is supplementary code to "A generalization of Convolutional Neural Networks to Graph-Structured Data", by Yotam Hechtlinger, Purvasha Chakravarti and Jining Qin.
+This is updated code to [https://github.com/hechtlinger/graph_cnn]() . Because the code from the link requires environment using "theano" as backend, which is super unconvinent for reproducing, I modifiy the code in function `call(self, x)` in graph_convolution.py and try to make it easier for deployment.
 
 ------------------
 
 ### Basic example
-The graph convolution is implemented as a Keras layer, receiving as an argument an index matrix denoting the nodes proximity according to the expected number of visits. The implementation details are discussed in the paper.
 ```python
-from kears.models import Sequential
-from graph_convolution import GraphConv
-
-g_model = Sequential()
-g_model.add(GraphConv(filters=filters, neighbors_ix_mat=neighbors_ix_mat, 
-                      num_neighbors=num_neighbors, input_shape=(1000,1)))
+cd /code/
+python DPP4_graph_conv.py
 ```
 
 ------------------
 
 ### Merck Dataset
-The DPP4 dataset is part of the Merck Molecular Activity Challenge, a previous [Kaggle](https://www.kaggle.com/c/MerckActivity) competition. The data used here was downloaded from the [supplementary material](http://pubs.acs.org/doi/suppl/10.1021/ci500747n) of the paper "Deep Neural Nets as a Method for Quantitative Structure–Activity Relationships" by Ma et al.
+The DPP4 dataset is part of the Merck Molecular Activity Challenge, a previous [Kaggle](https://www.kaggle.com/c/MerckActivity) competition.
 
 ------------------
 
 ### Dependencies
-Requires Keras version 2.0.0 or higher running the Theano backend. 
+```
+conda install requirement.txt
+```
+
+```
+pip install ipykernel
+```
 
 

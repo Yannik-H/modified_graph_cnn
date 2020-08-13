@@ -28,7 +28,7 @@ from matplotlib import pyplot as plt
 from matplotlib.font_manager import FontProperties
 import seaborn as sns
 
-import cPickle as pickle
+#import cPickle as pickle
 
 seed_val = 1984
 np.random.seed(seed_val) # for reproducibility
@@ -65,17 +65,17 @@ val_data = pd.read_csv(open(val_loc,'r'))
 features_names = np.intersect1d(tr_data.columns.values[2:],
                                 val_data.columns.values[2:])
 
-X_train, y_train = [np.array(tr_data[features_names],dtype = 'float32'),
-                    np.array(tr_data['Act'],dtype = 'float32')]
+X_train, y_train = [np.array(tr_data[features_names], dtype='float32'),
+                    np.array(tr_data['Act'], dtype='float32')]
 
-active_ix = np.array(X_train,dtype='bool').sum(0) >= 20
-X_train = X_train[:,active_ix]
+active_ix = np.array(X_train, dtype='bool').sum(0) >= 20
+X_train = X_train[:, active_ix]
 X_train = (X_train / X_train.max(0))
 
 print('Training data shape:(%d,%d)'%(X_train.shape))
                     
-X_test, y_test = [np.array(val_data[features_names],dtype = 'float32'),
-                    np.array(val_data['Act'],dtype = 'float32')]
+X_test, y_test = [np.array(val_data[features_names], dtype='float32'),
+                    np.array(val_data['Act'], dtype='float32')]
 
 X_test = X_test[:,active_ix]
 X_test = (X_test / X_test.max(0))
@@ -84,7 +84,7 @@ print('Test data shape:(%d,%d)'%(X_test.shape))
 
 ### Prepare the Graph Correlation matrix 
 corr_mat = np.array(normalize(np.abs(np.corrcoef(X_train.transpose())), 
-                              norm='l1', axis=1),dtype='float64')
+                              norm='l1', axis=1), dtype='float64')
 graph_mat = np.argsort(corr_mat,1)[:,-num_neighbors:]
 
 # %%
@@ -93,7 +93,7 @@ graph_mat = np.argsort(corr_mat,1)[:,-num_neighbors:]
 g_model = Sequential()
 g_model.add(GraphConv(filters=filters_1, neighbors_ix_mat = graph_mat, 
                       num_neighbors=num_neighbors, activation='relu', 
-                      input_shape=(X_train.shape[1],1)))
+                      input_shape=(X_train.shape[1], 1)))
 g_model.add(Dropout(0.25))
 g_model.add(Flatten())
 g_model.add(Dense(1, kernel_regularizer=l2(0.01)))
@@ -110,11 +110,11 @@ for i in range(epochs):
               batch_size=batch_size,
               verbose = 0,)
 
-    y_pred = g_model.predict(X_test.reshape(X_test.shape[0],X_test.shape[1],1), 
+    y_pred = g_model.predict(X_test.reshape(X_test.shape[0],X_test.shape[1], 1),
                              batch_size=100).flatten()
-    r_squared = (np.corrcoef(y_pred,y_test)**2)[0,1]
+    r_squared = (np.corrcoef(y_pred, y_test)**2)[0, 1]
     results['g'].append(r_squared)
-    print('Epoch: %d, R squared: %.5f'%(i,r_squared))
+    print('Epoch: %d, R squared: %.5f' % (i, r_squared))
 
 results['g'] = np.array(results['g'])
 print('1-Conv R squared = %.5f'%results['g'][-1])
@@ -123,7 +123,7 @@ print('1-Conv R squared = %.5f'%results['g'][-1])
 
 ### 1 layer graph CNN 1 FC
 g_fc_model = Sequential()
-g_fc_model.add(GraphConv(filters=filters_1, neighbors_ix_mat = graph_mat, 
+g_fc_model.add(GraphConv(filters=filters_1, neighbors_ix_mat=graph_mat,
                          num_neighbors=num_neighbors, activation='relu', 
                          input_shape=(X_train.shape[1],1)))
 g_fc_model.add(Dropout(0.25))

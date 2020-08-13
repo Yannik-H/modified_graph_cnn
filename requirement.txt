@@ -1,0 +1,6 @@
+keras=2.2.2
+seaborn
+numpy
+pandas
+scikit-learn
+

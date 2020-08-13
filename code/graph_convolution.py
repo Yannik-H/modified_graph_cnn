@@ -1,8 +1,10 @@
 from keras.layers.core import *
 
-from keras import backend as K
+#from keras import backend as K
 from keras.engine.topology import Layer
 from keras import initializers
+import numpy as np
+import tensorflow as tf
 
 class GraphConv(Layer):
     '''Convolution operator for graphs.
@@ -81,8 +83,8 @@ class GraphConv(Layer):
                  bias_constraint=None,                 
                  **kwargs):
 
-        if K.backend() != 'theano':
-            raise Exception("GraphConv Requires Theano Backend.")
+        #if K.backend() != 'theano':
+        #    raise Exception("GraphConv Requires Theano Backend.")
             
         if 'input_shape' not in kwargs and 'input_dim' in kwargs:
            kwargs['input_shape'] = (kwargs.pop('input_dim'),)
@@ -124,11 +126,30 @@ class GraphConv(Layer):
         self.built = True
                        
     def call(self, x):
-        x_expanded = x[:,self.neighbors_ix_mat,:]
+        #neighbors_ix_mat.shape = (2153,5)
+        #x.shape = (?, 2153, 1)
+        #x_expanded.shape = (?, 2153, 5)
+        #self.kernel.shape = (5, 1, 10)
+        #output.shape = (?, 2153, 10)
+        self.neighbors_ix_mat = self.neighbors_ix_mat.astype(np.int32)
+        temp = x
+        for i in range(self.num_neighbors - 1):
+            temp = tf.concat([temp, x], 2)
+        x = temp    #reshape x from (?, 2153, 1) to (?, 2153, 5) in order to do the following multiplying operation
+
+        #x_expanded = x[:, self.neighbors_ix_mat, :]    #original code
+
+        x_expanded = tf.multiply(x, self.neighbors_ix_mat)      #Is it the right way to reproduce the code one line above?
+        x_expanded = x_expanded[:, :, :, tf.newaxis]        #reshape the x_expanded from (?, 2153, 5) to (?, 2153, 5, 1)
+
         #Tensor dot implementation requires theano backend  
-        output = K.T.tensordot(x_expanded, self.kernel, [[2,3],[0,1]])   
+        #output = K.T.tensordot(x_expanded, self.kernel, [[2,3],[0,1]])     #original code use Keras which needs "theano" as backend rather than "tensorflow"
+
+        output = tf.tensordot(x_expanded, self.kernel, ([2, 3], [0, 1]))        #almost the same as original code, I use tensorflow's tensordot() here
+        #output = K.cast_to_floatx(test)    #original code
         if self.use_bias:
-            output += K.reshape(self.bias, (1, 1, self.filters))
+            #output += K.reshape(self.bias, (1, 1, self.filters))   #original code
+            output += self.bias     #we don't need to reshape self.bias because of the "Broadcasting" mechanism of Python
         
         output = self.activation(output)
         return output
