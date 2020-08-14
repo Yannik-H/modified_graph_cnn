@@ -19,6 +19,10 @@ The DPP4 dataset is part of the Merck Molecular Activity Challenge, a previous [
 
 ### Dependencies
 ```
+conda create -n py35 python=3.5 && conda activate py35
+```
+
+```
 conda install requirement.txt
 ```
 
